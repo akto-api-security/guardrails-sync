@@ -11,7 +11,7 @@
   "piiTypes": [
     {
       "behavior": "mask",
-      "minMatchCount": 6,
+      "minMatchCount": 10,
       "type": "email"
     },
     {
@@ -21,7 +21,7 @@
     }
   ],
   "secretsDetection": {
-    "confidenceScore": 0.7,
+    "confidenceScore": 1.0,
     "enabled": true
   }
 }
