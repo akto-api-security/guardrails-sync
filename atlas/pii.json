@@ -2,7 +2,7 @@
   "name": "pii-test",
   "behaviour": "block",
   "active": true,
-  "blockedMessage": "Sorry this is blokced because of Akto Guardrails.",
+  "blockedMessage": "Sorry this is blokced",
   "description": "PII filters for email and credit card",
   "applyOnRequest": true,
   "applyOnResponse": true,
