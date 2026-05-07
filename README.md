@@ -45,6 +45,8 @@ argus/my-policy.json     →  policy name: "my-policy", context: AGENTIC
 
 The workflow injects `name`, `createdBy`, `sourceHash`, and `source` automatically — do not include them in the file.
 
+> **Note:** The filename (without `.json`) is always used as the policy name. If your JSON includes a `name` field, it will be ignored and overridden by the filename. Name your files intentionally — e.g. `pii-protection.json` → policy name `pii-protection`.
+
 ---
 
 ## Policy field reference
