@@ -11,7 +11,7 @@
   "piiTypes": [
     {
       "behavior": "block",
-      "minMatchCount": 2,
+      "minMatchCount": 6,
       "type": "email"
     },
     {
