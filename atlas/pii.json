@@ -10,7 +10,7 @@
   "severity": "CRITICAL",
   "piiTypes": [
     {
-      "behavior": "mask",
+      "behavior": "block",
       "minMatchCount": 1,
       "type": "email"
     },
