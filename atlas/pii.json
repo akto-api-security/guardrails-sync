@@ -11,7 +11,7 @@
   "piiTypes": [
     {
       "behavior": "mask",
-      "minMatchCount": 10,
+      "minMatchCount": 1,
       "type": "email"
     },
     {
