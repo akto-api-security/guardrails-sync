@@ -1,0 +1,79 @@
+{
+  "name": "test guardrail",
+  "behaviour": "block",
+  "active": true,
+  "blockedMessage": "Sorry this is blokced",
+  "description": "",
+  "applyOnRequest": true,
+  "applyOnResponse": true,
+  "applyToAllServers": true,
+  "severity": "MEDIUM",
+  "contentFiltering": {
+    "harmfulCategories": {
+      "misconduct": "HIGH",
+      "hate": "HIGH",
+      "insults": "HIGH",
+      "sexual": "HIGH",
+      "violence": "HIGH"
+    },
+    "code": {
+      "level": "HIGH"
+    },
+    "promptAttacks": {
+      "level": "HIGH"
+    }
+  },
+  "anonymizeDetection": {
+    "confidenceScore": 0.7,
+    "enabled": true
+  },
+  "banCodeDetection": {
+    "confidenceScore": 0.7,
+    "enabled": true
+  },
+  "basePromptRule": {
+    "confidenceScore": 0.5,
+    "enabled": true
+  },
+  "gibberishDetection": {
+    "confidenceScore": 0.7,
+    "enabled": true
+  },
+  "llmRule": {
+    "confidenceScore": 0.5,
+    "enabled": true,
+    "userPrompt": "block all the tools"
+  },
+  "piiTypes": [
+    {
+      "behavior": "block",
+      "minMatchCount": 2,
+      "type": "email"
+    },
+    {
+      "behavior": "mask",
+      "minMatchCount": 1,
+      "type": "credit_card"
+    }
+  ],
+  "regexPatternsV2": [
+    {
+      "behavior": "block",
+      "pattern": "nayan"
+    }
+  ],
+  "secretsDetection": {
+    "confidenceScore": 0.7,
+    "enabled": true
+  },
+  "sentimentDetection": {
+    "confidenceScore": 0.7,
+    "enabled": true
+  },
+  "tokenLimitDetection": {
+    "confidenceScore": 0.7,
+    "enabled": true
+  },
+  "url": "https://api.chatgpt.com",
+  "confidenceScore": 25.0
+}

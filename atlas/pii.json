@@ -1,0 +1,27 @@
+{
+  "name": "pii-new",
+  "behaviour": "block",
+  "active": true,
+  "blockedMessage": "Sorry this is blokced",
+  "description": "PII filters for email and credit card",
+  "applyOnRequest": true,
+  "applyOnResponse": true,
+  "applyToAllServers": true,
+  "severity": "CRITICAL",
+  "piiTypes": [
+    {
+      "behavior": "block",
+      "minMatchCount": 2,
+      "type": "email"
+    },
+    {
+      "behavior": "mask",
+      "minMatchCount": 1,
+      "type": "credit_card"
+    }
+  ],
+  "secretsDetection": {
+    "confidenceScore": 0.7,
+    "enabled": true
+  }
+}
