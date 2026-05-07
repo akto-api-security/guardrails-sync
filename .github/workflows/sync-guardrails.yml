@@ -14,23 +14,31 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
 
+          echo "::group::Discovering policy files"
           files=(atlas/*.json argus/*.json)
           if [ ${#files[@]} -eq 0 ]; then
-            echo "No guardrail files found. Exiting."
+            echo "::warning::No guardrail files found. Exiting."
             exit 0
           fi
+          echo "Found ${#files[@]} file(s): ${files[*]}"
+          echo "::endgroup::"
 
+          echo "::group::Validating files"
           seen_names=()
           for f in "${files[@]}"; do
-            jq empty "$f" 2>/dev/null || { echo "❌ $f: invalid JSON"; exit 1; }
+            jq empty "$f" 2>/dev/null || { echo "::error file=$f::Invalid JSON"; exit 1; }
 
             name=$(basename "$f" .json)
 
-            [[ " ${seen_names[*]} " == *" $name "* ]] && { echo "❌ Duplicate name: $name"; exit 1; }
+            if [[ " ${seen_names[*]} " == *" $name "* ]]; then
+              echo "::error file=$f::Duplicate policy name: $name"
+              exit 1
+            fi
             seen_names+=("$name")
 
-            echo "✅ $f ($name)"
+            echo "✅ $f — name: $name"
           done
+          echo "::endgroup::"
 
 
       - name: Sync policies to Akto
@@ -48,17 +56,24 @@ jobs:
             local dir="$1"
             local context_source="$2"
 
-            for f in "$dir"/*.json; do
+            local files=("$dir"/*.json)
+            if [ ${#files[@]} -eq 0 ] || [ ! -f "${files[0]}" ]; then
+              echo "  No files in $dir — skipping"
+              return
+            fi
+
+            echo "::group::Syncing $dir (x-context-source: $context_source)"
+            for f in "${files[@]}"; do
               name=$(basename "$f" .json)
               hash=$(sha256sum "$f" | awk '{print $1}')
+
+              echo "→ [$context_source] $name (sha256: ${hash:0:16}...)"
 
               payload=$(jq \
                 --arg n  "$name" \
                 --arg h  "$hash" \
                 --arg by "Github Workflow" \
                 '{policy: (. + {name: $n, createdBy: $by, sourceHash: $h, source: "GITHUB_WORKFLOW"})}' "$f")
-
-              echo "→ $name (hash: ${hash:0:12}...) [x-context-source: $context_source]"
 
               http_code=$(curl -sS -o /tmp/resp.txt -w "%{http_code}" \
                 --retry 3 --retry-delay 2 --retry-all-errors \
@@ -74,21 +89,32 @@ jobs:
               if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
                 status=$(echo "$body" | jq -r '.status // "ok"' 2>/dev/null || echo "ok")
                 case "$status" in
-                  unchanged) echo "  ⏭  unchanged"; unchanged=$((unchanged+1)) ;;
-                  *)         echo "  ✅ synced";    success=$((success+1)) ;;
+                  unchanged)
+                    echo "  ⏭  $name — unchanged (no-op)"
+                    unchanged=$((unchanged+1))
+                    ;;
+                  *)
+                    echo "  ✅ $name — synced (HTTP $http_code)"
+                    success=$((success+1))
+                    ;;
                 esac
               else
-                echo "  ❌ HTTP $http_code"
-                echo "  $body"
+                echo "::error file=$f::Sync failed — HTTP $http_code: $body"
                 failed=$((failed+1))
                 failed_files+=("$f")
               fi
               sleep 0.2
             done
+            echo "::endgroup::"
           }
 
+          echo "::group::Syncing atlas → ENDPOINT"
           sync_dir atlas ENDPOINT
+          echo "::endgroup::"
+
+          echo "::group::Syncing argus → AGENTIC"
           sync_dir argus AGENTIC
+          echo "::endgroup::"
 
           echo ""
           echo "===== Summary ====="
@@ -97,6 +123,7 @@ jobs:
           echo "❌ Failed:    $failed"
 
           if [ "$failed" -gt 0 ]; then
+            echo "::error::${#failed_files[@]} policy(s) failed to sync:"
             printf '  - %s\n' "${failed_files[@]}"
             exit 1
           fi
